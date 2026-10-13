@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гра: Водорості з пляшки</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .bottle-container {
+            position: relative;
+            margin: 30px auto;
+            width: 150px;
+            height: 250px;
+        }
+
+        .bottle {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.3s;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        .bottle:hover {
+            transform: scale(1.05);
+        }
+
+        .bottle.shaking {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .algae-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+            min-height: 40px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .algae-name.visible {
+            opacity: 1;
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .category-btn {
+            padding: 15px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+        }
+
+        .btn-diatom {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-brown {
+            background: linear-gradient(135deg, #a8763e, #8b6f47);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #56ab2f, #a8e063);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .feedback.visible {
+            opacity: 1;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .reset-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 10px;
+            color: #004085;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🌊 Водорості з пляшки 🌊</h1>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Правильно</div>
+                <div class="score-value" id="correct">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Неправильно</div>
+                <div class="score-value" id="incorrect">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Всього</div>
+                <div class="score-value" id="total">0</div>
+            </div>
+        </div>
+
+        <div class="bottle-container">
+            <svg class="bottle" id="bottle" viewBox="0 0 150 250" xmlns="http://www.w3.org/2000/svg">
+                <!-- Пляшка -->
+                <defs>
+                    <linearGradient id="bottleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:0.3" />
+                        <stop offset="50%" style="stop-color:#7ab8ff;stop-opacity:0.5" />
+                        <stop offset="100%" style="stop-color:#4a90e2;stop-opacity:0.3" />
+                    </linearGradient>
+                </defs>
+                
+                <!-- Горлечко -->
+                <rect x="60" y="10" width="30" height="40" fill="url(#bottleGradient)" stroke="#2c5aa0" stroke-width="2"/>
+                <rect x="65" y="5" width="20" height="10" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+                
+                <!-- Тіло пляшки -->
+                <path d="M 60 50 Q 40 50 40 70 L 40 220 Q 40 240 60 240 L 90 240 Q 110 240 110 220 L 110 70 Q 110 50 90 50 Z" 
+                      fill="url(#bottleGradient)" stroke="#2c5aa0" stroke-width="2"/>
+                
+                <!-- Водорості всередині -->
+                <ellipse cx="75" cy="150" rx="25" ry="15" fill="#2d8659" opacity="0.6"/>
+                <ellipse cx="65" cy="170" rx="20" ry="12" fill="#3fa34d" opacity="0.6"/>
+                <ellipse cx="85" cy="180" rx="18" ry="10" fill="#2d8659" opacity="0.6"/>
+                <ellipse cx="75" cy="200" rx="22" ry="13" fill="#3fa34d" opacity="0.6"/>
+            </svg>
+        </div>
+
+        <div class="algae-name" id="algaeName">Натисніть на пляшку!</div>
+
+        <div class="buttons-container">
+            <button class="category-btn btn-red" onclick="checkAnswer('red')">Червоні</button>
+            <button class="category-btn btn-diatom" onclick="checkAnswer('diatom')">Діатомові</button>
+            <button class="category-btn btn-brown" onclick="checkAnswer('brown')">Бурі</button>
+            <button class="category-btn btn-green" onclick="checkAnswer('green')">Зелені</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <button class="reset-btn" onclick="resetGame()">Почати заново</button>
+
+        <div class="instructions">
+            <strong>Як грати:</strong><br>
+            1. Натисніть на пляшку, щоб витягнути назву водорості<br>
+            2. Визначте, до якої категорії вона належить<br>
+            3. Натисніть відповідну кнопку
+        </div>
+    </div>
+
+    <script>
+        const algaeData = [
+            // Червоні водорості
+            { name: "Порфіра", category: "red" },
+            { name: "Хондрус", category: "red" },
+            { name: "Грацілярія", category: "red" },
+            { name: "Філофора", category: "red" },
+            { name: "Церамііум", category: "red" },
+            { name: "Родименія", category: "red" },
+            
+            // Діатомові водорості
+            { name: "Навікула", category: "diatom" },
+            { name: "Піннулярія", category: "diatom" },
+            { name: "Цимбела", category: "diatom" },
+            { name: "Ахнантес", category: "diatom" },
+            { name: "Мелозіра", category: "diatom" },
+            { name: "Диплонейс", category: "diatom" },
+            
+            // Бурі водорості
+            { name: "Ламінарія", category: "brown" },
+            { name: "Фукус", category: "brown" },
+            { name: "Саргасум", category: "brown" },
+            { name: "Падіна", category: "brown" },
+            { name: "Цістозейра", category: "brown" },
+            { name: "Аларія", category: "brown" },
+            
+            // Зелені водорості
+            { name: "Ульва", category: "green" },
+            { name: "Хлорела", category: "green" },
+            { name: "Спірогіра", category: "green" },
+            { name: "Вольвокс", category: "green" },
+            { name: "Хламідомонада", category: "green" },
+            { name: "Едогоніум", category: "green" }
+        ];
+
+        let currentAlgae = null;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let totalCount = 0;
+        let canAnswer = false;
+
+        const bottle = document.getElementById('bottle');
+        const algaeNameElement = document.getElementById('algaeName');
+        const feedbackElement = document.getElementById('feedback');
+
+        bottle.addEventListener('click', pullAlgae);
+
+        function pullAlgae() {
+            if (canAnswer) return;
+
+            // Анімація пляшки
+            bottle.classList.add('shaking');
+            setTimeout(() => bottle.classList.remove('shaking'), 500);
+
+            // Випадкова водорість
+            const randomIndex = Math.floor(Math.random() * algaeData.length);
+            currentAlgae = algaeData[randomIndex];
+
+            // Показати назву
+            setTimeout(() => {
+                algaeNameElement.textContent = currentAlgae.name;
+                algaeNameElement.classList.add('visible');
+                canAnswer = true;
+                feedbackElement.classList.remove('visible');
+            }, 500);
+        }
+
+        function checkAnswer(answer) {
+            if (!canAnswer) {
+                feedbackElement.textContent = "Спочатку витягніть водорість з пляшки!";
+                feedbackElement.className = 'feedback visible incorrect';
+                return;
+            }
+
+            totalCount++;
+            
+            if (answer === currentAlgae.category) {
+                correctCount++;
+                feedbackElement.textContent = "✅ Правильно!";
+                feedbackElement.className = 'feedback visible correct';
+            } else {
+                incorrectCount++;
+                const correctCategory = getCategoryName(currentAlgae.category);
+                feedbackElement.textContent = `❌ Неправильно! Це ${correctCategory} водорості.`;
+                feedbackElement.className = 'feedback visible incorrect';
+            }
+
+            updateScoreBoard();
+            canAnswer = false;
+
+            // Приховати назву після відповіді
+            setTimeout(() => {
+                algaeNameElement.classList.remove('visible');
+                algaeNameElement.textContent = "Натисніть на пляшку!";
+            }, 2000);
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'red': 'червоні',
+                'diatom': 'діатомові',
+                'brown': 'бурі',
+                'green': 'зелені'
+            };
+            return categories[category];
+        }
+
+        function updateScoreBoard() {
+            document.getElementById('correct').textContent = correctCount;
+            document.getElementById('incorrect').textContent = incorrectCount;
+            document.getElementById('total').textContent = totalCount;
+        }
+
+        function resetGame() {
+            correctCount = 0;
+            incorrectCount = 0;
+            totalCount = 0;
+            canAnswer = false;
+            updateScoreBoard();
+            algaeNameElement.textContent = "Натисніть на пляшку!";
+            algaeNameElement.classList.remove('visible');
+            feedbackElement.classList.remove('visible');
+        }
+    </script>
+</body>
+</html>
